@@ -146,7 +146,6 @@ $page = "List";
                                     <td>
                                       
                                       <a class='btn btn-sm btn-primary' href='ubah-kegiatan.php?id=" . $row['id_kegiatan'] . "'> Ubah </a>
-                                      <a class='btn btn-sm btn-danger' href='hapus-kegiatan.php?id=" . $row['id_kegiatan'] . "'> Hapus </a>
                                     </td>
                                   </tr>";
                             $no++;

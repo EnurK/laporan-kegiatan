@@ -5,7 +5,7 @@ $subjek = $_POST['subjek'];
 $tempat = $_POST['tempat'];
 $IdUser = $_POST['IdUser'];
 $balasan = $_POST['status'];
-$id_kegiatan = $_POST['id_kegiatan']; // Ambil ID kegiatan yang akan diubah
+$id_kegiatan = isset($_POST['id_kegiatan']) ? $_POST['id_kegiatan'] : null; // Cek jika ada ID kegiatan yang disediakan
 
 if (isset($_POST['send'])) {
     $allowed_image_extension = array("png", "jpg", "jpeg", "bmp");
@@ -15,18 +15,18 @@ if (isset($_POST['send'])) {
     $image_upload_status = true;
     $uploaded_file_names = array();
 
-    // Check if the number of images exceeds the limit
+    // Batasi jumlah gambar yang diunggah
     if (count($image_files['name']) > 3) {
         header("Location: create-kegiatan.php?laporan=jumlah_gambar");
         exit();
     }
 
-    // Create directory if not exist
+    // Buat direktori jika belum ada
     if (!is_dir($upload_image_dir)) {
         mkdir($upload_image_dir, 0777, true);
     }
 
-    // Handle image uploads
+    // Proses upload gambar
     for ($i = 0; $i < count($image_files['name']); $i++) {
         $file_name = $image_files['name'][$i];
         $file_temp = $image_files['tmp_name'][$i];
@@ -47,25 +47,32 @@ if (isset($_POST['send'])) {
     }
 
     if ($image_upload_status) {
-        // Serialize the array of file names to store in the database
+        // Serialisasi nama file gambar untuk disimpan di database
         $serialized_file_names = serialize($uploaded_file_names);
 
-        // Update activity data in the database
-        $query = "UPDATE tbl_kegiatan 
-                  SET subjek_kegiatan = '$subjek', 
-                      tempat_kegiatan = '$tempat', 
-                      tgl_kegiatan = NOW(), 
-                      bukti_kegiatan = '$serialized_file_names', 
-                      id_user = '$IdUser' 
-                  WHERE id_kegiatan = '$id_kegiatan'";
-        
+        if ($id_kegiatan) {
+            // Jika `id_kegiatan` ada, lakukan `UPDATE` untuk memperbarui data yang sudah ada
+            $query = "UPDATE tbl_kegiatan 
+                      SET subjek_kegiatan = '$subjek', 
+                          tempat_kegiatan = '$tempat', 
+                          tgl_kegiatan = NOW(), 
+                          bukti_kegiatan = '$serialized_file_names', 
+                          id_user = '$IdUser' 
+                      WHERE id_kegiatan = '$id_kegiatan'";
+        } else {
+            // Jika `id_kegiatan` tidak ada, lakukan `INSERT` untuk menambah data baru
+            $query = "INSERT INTO tbl_kegiatan (subjek_kegiatan, tempat_kegiatan, tgl_kegiatan, bukti_kegiatan, id_user) 
+                      VALUES ('$subjek', '$tempat', NOW(), '$serialized_file_names', '$IdUser')";
+        }
+
+        // Eksekusi query
         if (mysqli_query($koneksi, $query)) {
             header("Location: confirm-kegiatan.php?msg=berhasil");
         } else {
-            header("Location: create-kegiatan.php?pesan=gagal");
+            header("Location: create-kegiatan.php?pesan=gagal_db");
         }
     } else {
-        header("Location: create-kegiatan.php?pesan=gagal");
+        header("Location: create-kegiatan.php?pesan=gagal_upload");
     }
 } else {
     header("Location: create-kegiatan.php?pesan=lengkapi");

@@ -141,7 +141,6 @@
                               
                               <td>
                                 <a class='btn btn-sm btn-info' href='detail-kegiatan.php?id=".$row['id_kegiatan']."'> Detail </a>
-                                <a class='btn btn-sm btn-danger' href='del-kegiatan.php?id=".$row['id_kegiatan']."'> Hapus </a>
                               </td>
                           </tr>";
                           $no++;
